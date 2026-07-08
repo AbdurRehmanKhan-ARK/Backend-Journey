@@ -126,6 +126,66 @@ The current `index.js` doesn't define any custom middleware yet, but as the app 
 
 ---
 
+## CORS: Why the Frontend and Backend Sometimes Can't Talk
+
+CORS (Cross-Origin Resource Sharing) is a browser security rule, not a backend crash. It explains why a request from your React app (`localhost:5173`) to your Express server (`localhost:3000`) can fail even though the server is running perfectly fine.
+
+### What Counts as a Different "Origin"
+
+An origin is the combination of **protocol + domain + port**. If any of these three differ, the browser treats it as a different origin.
+
+| Frontend | Backend | Same Origin? |
+|---|---|---|
+| `http://localhost:5173` | `http://localhost:3000` | ❌ No (different port) |
+| `http://localhost:3000` | `https://localhost:3000` | ❌ No (different protocol) |
+| `https://noteforge.com` | `https://api.noteforge.com` | ❌ No (different domain) |
+| `http://localhost:5173` | `http://localhost:5173` | ✅ Yes |
+
+### Why the Browser Blocks It
+
+By default, browsers block JavaScript running on one origin from reading responses from a different origin - even if the request itself succeeds on the server. This is a security measure to prevent malicious sites from silently reading data from other sites a user is logged into.
+
+```mermaid
+sequenceDiagram
+    participant Browser as Browser (localhost:5173)
+    participant Server as Server (localhost:3000)
+
+    Browser->>Server: Request (GET /jokes)
+    Server-->>Browser: Response (200 OK + data)
+    Note over Browser: Browser checks: does response<br/>include permission for this origin?
+    Browser->>Browser: No CORS header found → block response from reaching JS code
+```
+
+Notice that the server *does* respond - the request isn't rejected at the network level. The browser receives the data, then refuses to hand it to your JavaScript code because the server never explicitly allowed the frontend's origin.
+
+### The Fix: `cors()` Middleware
+
+```js
+import cors from "cors";
+app.use(cors());
+```
+
+This middleware adds a header to every response:
+
+## Access-Control-Allow-Origin: 
+This tells the browser "any origin is allowed to read this response," which resolves the block.
+
+**Terminology:**
+
+| Term | Meaning |
+|---|---|
+| Origin | protocol + domain + port combination |
+| CORS | The browser mechanism that restricts cross-origin requests unless explicitly allowed |
+| `Access-Control-Allow-Origin` | Response header that tells the browser which origins are permitted to read the response |
+| Preflight Request | An automatic `OPTIONS` request the browser sends before certain requests (e.g. ones with custom headers or non-GET/POST methods) to check permissions before sending the real request |
+
+### Where This Fits in the Request Lifecycle
+
+CORS is enforced at **Step 4 (Middleware)** in the lifecycle above - `cors()` must run before the route handler, so the permission header is attached before the response is built. If `cors()` is missing or misconfigured, the request still reaches the handler and the handler still runs correctly - the failure happens only on the browser side, when it decides whether to expose the response to your frontend code.
+
+
+---
+
 ## Step 5 - Route Matching & Handler Execution
 
 Express maintains an internal list of all defined routes. When a request arrives, it checks - in order - which route matches the request's method and path:
