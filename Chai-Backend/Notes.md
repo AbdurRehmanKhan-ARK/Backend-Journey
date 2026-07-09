@@ -1,6 +1,5 @@
-## What is vite@latest
-- vite basically 
-
+## What is vite
+- Vite is a modern frontend build tool that provides a fast development experience for web applications. It leverages native ES modules in the browser and uses Rollup for production builds, allowing for faster hot module replacement (HMR) and optimized builds. 
 
 ## What is CORS
 - CORS stands for Cross-Origin Resource Sharing. It is a security feature implemented by web browsers to restrict web pages from making requests to a different domain than the one that served the web page. This is known as the Same-Origin Policy.
