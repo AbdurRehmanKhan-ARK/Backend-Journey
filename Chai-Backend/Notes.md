@@ -10,6 +10,32 @@
 ## Proxy and CORS
 - When the frontend and backend are on different domains or ports, browsers enforce the Same-Origin Policy, which can lead to CORS (Cross-Origin Resource Sharing) issues. To avoid this, you can set up a proxy in your frontend development servers.
 
+## Why `path.resolve()` instead of a plain string?
+
+`express.static('../frontend/dist')` — plain string path is relative
+to where you RUN the command from, not where the file is.
+
+`path.resolve('../frontend/dist')` — always gives absolute path,
+works no matter where you run the server from.
+
+✅ Always use `path.resolve()` for file paths in Express.
+
+## `app.get('*')` — Why the catch-all route?
+
+React is a Single Page Application (SPA).
+There is only ONE actual HTML file — `dist/index.html`.
+React Router handles `/about`, `/profile` etc. on the client side.
+
+Without `app.get('*')`:
+- User goes to `yoursite.com/about` directly → Express looks for
+  a file called `about` → 404 Not Found
+
+With `app.get('*')`:
+- Any unknown route → Express serves `index.html`
+- React Router takes over and renders the right component
+  
+
+  
 # Full-Stack Deployment: Bad Practice vs. Best Practice
 
 ## 1. The Core Problem (Development vs. Production)
