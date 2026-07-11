@@ -1,0 +1,17 @@
+{
+  "name": "mega-project",
+  "version": "1.0.0",
+  "description": "a mega project for backend journey",
+  "keywords": [
+    "javascript",
+    "backend",
+    "chai"
+  ],
+  "license": "ISC",
+  "author": "Abdur Rehman Khan",
+  "type": "modulejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
