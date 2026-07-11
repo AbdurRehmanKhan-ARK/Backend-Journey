@@ -1,0 +1,46 @@
+<svg width="680" height="320" viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="serverGrad" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#34d399"/>
+<stop offset="100%" stop-color="#059669"/>
+</linearGradient>
+<linearGradient id="dbGrad" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#60a5fa"/>
+<stop offset="100%" stop-color="#2563eb"/>
+</linearGradient>
+</defs>
+
+<g transform="translate(190,40)">
+<rect x="0" y="0" width="300" height="60" rx="10" fill="url(#serverGrad)"/>
+<circle cx="30" cy="30" r="6" fill="#ecfdf5"/>
+<circle cx="55" cy="30" r="6" fill="#ecfdf5" opacity="0.6"/>
+<rect x="220" y="18" width="60" height="24" rx="4" fill="#065f46" opacity="0.5"/>
+
+<rect x="0" y="72" width="300" height="60" rx="10" fill="url(#serverGrad)"/>
+<circle cx="30" cy="102" r="6" fill="#ecfdf5"/>
+<circle cx="55" cy="102" r="6" fill="#ecfdf5" opacity="0.6"/>
+<rect x="220" y="90" width="60" height="24" rx="4" fill="#065f46" opacity="0.5"/>
+
+<rect x="0" y="144" width="300" height="60" rx="10" fill="url(#serverGrad)"/>
+<circle cx="30" cy="174" r="6" fill="#ecfdf5"/>
+<circle cx="55" cy="174" r="6" fill="#ecfdf5" opacity="0.6"/>
+<rect x="220" y="162" width="60" height="24" rx="4" fill="#065f46" opacity="0.5"/>
+</g>
+
+<g transform="translate(80,110)">
+<path d="M0 20 A40 14 0 0 1 80 20 L80 70 A40 14 0 0 1 0 70 Z" fill="url(#dbGrad)"/>
+<ellipse cx="40" cy="20" rx="40" ry="14" fill="#93c5fd"/>
+<ellipse cx="40" cy="45" rx="40" ry="14" fill="none" stroke="#1e40af" stroke-width="1" opacity="0.4"/>
+</g>
+
+<line x1="160" y1="130" x2="190" y2="130" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+
+<g transform="translate(500,100)">
+<circle cx="0" cy="0" r="10" fill="#f59e0b"/>
+<circle cx="55" cy="-30" r="10" fill="#f59e0b"/>
+<circle cx="55" cy="30" r="10" fill="#f59e0b"/>
+<line x1="0" y1="0" x2="55" y2="-30" stroke="#f59e0b" stroke-width="2.5"/>
+<line x1="0" y1="0" x2="55" y2="30" stroke="#f59e0b" stroke-width="2.5"/>
+</g>
+<line x1="490" y1="100" x2="460" y2="130" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+</svg>
