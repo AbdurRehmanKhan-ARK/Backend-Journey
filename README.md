@@ -1,31 +1,18 @@
 <div align="center">
-
+  
+<img src="./Backend-Journey/assets/backend-logo.svg" width="220" alt="Backend Journey logo"/>
+  
 ![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=500&size=18&duration=3500&pause=1500&color=68D391&center=true&vCenter=true&width=650&lines=Backend+Journey;Learning+by+building.;Node.js+%7C+Express+%7C+MongoDB+%7C+REST+APIs;One+concept.+One+file.+Every+day.)
 
-<br/>
-
-**A structured JavaScript Backend learning repository | built alongside the Chai aur Code series.**
-_Every concept practiced in isolation. Every API built from scratch. Every session committed._
-
-<br/>
-
-![Node.js](https://img.shields.io/badge/Node.js-Runtime-339933?style=flat-square&logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-Framework-000000?style=flat-square&logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=flat-square&logo=mongodb&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
-![Series](https://img.shields.io/badge/Series-Chai%20aur%20Code-FF6B35?style=flat-square)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
-
 </div>
-
----
 
 ## About
 
 This repository documents a structured, concept-by-concept approach to learning JavaScript backend development from the ground up. Each topic from the **Chai aur Code** series is practiced in its own dedicated file - no combined scripts, no skipped concepts.
 
-> The goal is not just to watch and move on. Every session produces a committed file. The commit history is the learning log.
+Alongside the notes, this repo now also holds the **actual Backend + Frontend fullstack project** (`Chai-Backend/Backend` and `Chai-Backend/Frontend`) built while following the deployment and fullstack modules - not just theory, but a real Express + Vite app wired together and deployed.
+
+> The goal is not just to watch and move on. Every session produces a committed file or a working piece of code. The commit history is the learning log.
 
 ---
 
@@ -34,31 +21,67 @@ This repository documents a structured, concept-by-concept approach to learning 
 ```
 Backend-Journey/
 │
-├── 📁 Playlist-Tracking/
-│   └── 2. Backend to Production.md   # video notes - deployment, production setup
+├── 📁 .obsidian/                          # Obsidian vault config (notes are viewed/edited here)
 │
+├── 📁 Chai-Backend/
+│   │
+│   ├── 📁 Backend/                        # actual Express server
+│   │   ├── package.json
+│   │   ├── package-lock.json
+│   │   └── server.js
+│   │
+│   ├── 📁 Frontend/                       # actual Vite + React client
+│   │   ├── dist/                          # production build output
+│   │   ├── public/
+│   │   ├── src/
+│   │   ├── .gitignore
+│   │   ├── eslint.config.js
+│   │   ├── index.html
+│   │   ├── package.json
+│   │   ├── package-lock.json
+│   │   ├── vite.config.js
+│   │   └── README.md
+│   │
+│   ├── 📁 Playlist-Notes/                 # video-by-video concept notes + code
+│   │   ├── 📁 03_Data-Modelling-Mongoose/
+│   │   │   ├── Models/
+│   │   │   │   ├── e-commerce/
+│   │   │   │   ├── hospital-management/
+│   │   │   │   └── todos/
+│   │   │   └── 03_Data-Modelling-Mongoose.md
+│   │   ├── 01_Backend_to_Production.md
+│   │   └── 02_Full-Stack-Deployment-Practice.md
+│   │
+│   └── 📁 Playlist-Tracking/              # live mini-project built while following along
+│       ├── node_modules/
+│       └── .env
+├── 📁 Mega-Project/                       # youtube-style backend - full project (Hitesh sir's chai-backend series)
+│   ├── package.json
+│   └── README.md                         
+|  
 ├── 📁 Roadmap/
-│   ├── 00-START-HERE.md              # quick start guide - where to begin
-│   ├── Overview.md                   # complete course outline
-│   ├── 1-Introduction.md             # what is backend, client-server, HTTP basics
-│   ├── 2-Foundation.md               # Node.js, npm, package.json, modules
-│   ├── 3-ExpressJS.md                # Express setup, routing, middleware
-│   ├── 4-Databases.md                # MongoDB, PostgreSQL, when to use what
-│   ├── 5-ORM-ODM.md                  # Mongoose, Sequelize, schema, models
-│   ├── 6-API-Development.md          # REST APIs, CRUD, auth, JWT
-│   ├── 7-Deployment.md               # production, environment, hosting
-│   │
-│   ├── 📁 Code-Examples/             # ready-to-use templates and snippets
-│   │
-│   ├── 📁 Projects/
-│   │   ├── Project-Ideas.md          # project list with difficulty levels
-│   │   └── Project-Setup-Template.md # boilerplate setup for every project
-│   │
-│   └── 📁 Resources/
-│       ├── Commands-Cheatsheet.md    # quick reference - npm, git, node commands
-│       ├── Links-and-Documentation.md # official docs, useful references
-│       └── Useful-Libraries.md       # curated npm packages worth knowing
+│    ├── 00-START-HERE.md                # quick start guide - where to begin
+│    ├── Overview.md                     # complete course outline
+│    ├── 1-Introduction.md               # what is backend, client-server, HTTP basics
+│    ├── 2-Foundation.md                 # Node.js, npm, package.json, modules
+│    ├── 3-ExpressJS.md                  # Express setup, routing, middleware
+│    ├── 4-Databases.md                  # MongoDB, PostgreSQL, when to use what
+│    ├── 5-ORM-ODM.md                    # Mongoose, Sequelize, schema, models
+│    ├── 6-API-Development.md            # REST APIs, CRUD, auth, JWT
+│    ├── 7-Deployment.md                 # production, environment, hosting
+│    ├── Behind-The-Scenes.md            # how this repo/roadmap itself was structured
+│    │
+│    ├── 📁 Projects/
+│    │   ├── Project-Ideas.md            # project list with difficulty levels
+│    │   └── Project-Setup-Template.md   # boilerplate setup for every project
+│    │
+│    └── 📁 Resources/
+│         ├── Commands-Cheatsheet.md      # quick reference - npm, git, node commands
+│         ├── Links-and-Documentation.md  # official docs, useful references
+│         └── Useful-Libraries.md         # curated npm packages worth knowing
 │
+├── 📄 .gitignore
+├── 📄 LICENSE
 └── 📄 README.md
 ```
 
@@ -75,11 +98,25 @@ Backend-Journey/
 | `5-ORM-ODM.md` | **ORM/ODM** - Mongoose · Sequelize · schemas · models · CRUD | ✅ Complete |
 | `6-API-Development.md` | **API Development** - REST principles · CRUD APIs · JWT auth · Postman testing | ✅ Complete |
 | `7-Deployment.md` | **Deployment** - environment variables · production setup · hosting | ✅ Complete |
+| `Behind-The-Scenes.md` | **Behind The Scenes** - how the roadmap/repo itself is organized and why | ✅ Complete |
 
-> 🔄 Currently tracking: Playlist-Tracking/ - video by video notes
+> 🔄 Currently tracking: `Playlist-Notes/` - video-by-video notes (Mongoose data modelling in progress: todos, e-commerce, hospital-management)
+> 🏗️ Currently building: `Chai-Backend/Backend` + `Chai-Backend/Frontend` - a real fullstack app tying the concepts together
 > 🎯 Goal: Production-ready REST APIs - design · build · secure · deploy
 
 ---
+
+## 🎬 Mega Project
+
+Following [`hiteshchoudhary/chai-backend`](https://github.com/hiteshchoudhary/chai-backend) - a complete, production-shaped backend for a YouTube-style video hosting platform.
+
+**Core features:** login/signup · JWT access + refresh tokens · bcrypt password hashing · video upload · like/dislike · comment/reply · subscribe/unsubscribe
+
+This is where every earlier module - Express routing, Mongoose modelling, auth, deployment - comes together into one real app, not isolated exercises.
+
+📐 [ER Diagram](https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj)
+
+> Tracked under `Mega-Project/` at repo root, alongside `Chai-Backend/`.
 
 ## How to Run
 
@@ -88,34 +125,20 @@ Backend-Journey/
 ```bash
 # Clone the repo
 git clone https://github.com/AbdurRehmanKhan-ARK/Backend-Journey.git
-cd Backend-Journey
+cd Backend-Journey/Chai-Backend
 
-# Install dependencies
+# Backend
+cd Backend
 npm install
+node server.js
+# or with nodemon
+npx nodemon server.js
 
-# Run the server
-node index.js
-
-# Or with nodemon (auto-restart on changes)
-npx nodemon index.js
+# Frontend (separate terminal)
+cd ../Frontend
+npm install
+npm run dev
 ```
-
----
-
-## Commit Convention
-
-Every session follows a consistent commit format:
-
-```
-feat(node): modules, require, CommonJS vs ES modules
-feat(express): routing, params, query strings, middleware
-feat(mongodb): mongoose schema, model, CRUD operations
-feat(auth): JWT sign and verify, protected route middleware
-feat(project): todo API - CRUD endpoints with MongoDB
-docs(readme): update roadmap and structure
-```
-
-> The commit history is a readable record of what was learned and when.
 
 ---
 
