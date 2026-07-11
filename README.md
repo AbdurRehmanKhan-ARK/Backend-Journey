@@ -55,7 +55,10 @@ Backend-Journey/
 │   └── 📁 Playlist-Tracking/              # live mini-project built while following along
 │       ├── node_modules/
 │       └── .env
-│   
+├── 📁 Mega-Project/                       # youtube-style backend - full project (Hitesh sir's chai-backend series)
+│   ├── package.json
+│   └── README.md                         
+|  
 ├── 📁 Roadmap/
 │    ├── 00-START-HERE.md                # quick start guide - where to begin
 │    ├── Overview.md                     # complete course outline
@@ -103,20 +106,17 @@ Backend-Journey/
 
 ---
 
-## 🎬 Mega Project - Upcoming
+## 🎬 Mega Project
 
-The series is building toward a **large-scale capstone project**: a **YouTube-style video platform** (not a pixel clone, but covering the same category of functionality) -
+Following [`hiteshchoudhary/chai-backend`](https://github.com/hiteshchoudhary/chai-backend) - a complete, production-shaped backend for a YouTube-style video hosting platform.
 
-- User auth (signup/login, JWT, refresh tokens)
-- Video upload & storage (Cloudinary/cloud storage integration)
-- Channels, subscriptions, playlists
-- Likes, comments, views tracking
-- Watch history
-- Aggregation pipelines (MongoDB) for feeds, recommendations, stats
+**Core features:** login/signup · JWT access + refresh tokens · bcrypt password hashing · video upload · like/dislike · comment/reply · subscribe/unsubscribe
 
-This will be the point where every earlier module - Express routing, Mongoose modelling, auth, deployment - comes together into one real, production-shaped app. Once Hitesh sir's upcoming videos cover this, it'll get its own folder under `Chai-Backend/` (likely `Chai-Backend/Mega-Project/`) with the same notes + code split used elsewhere in this repo.
+This is where every earlier module - Express routing, Mongoose modelling, auth, deployment - comes together into one real app, not isolated exercises.
 
----
+📐 [ER Diagram](https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj)
+
+> Tracked under `Mega-Project/` at repo root, alongside `Chai-Backend/`.
 
 ## How to Run
 
