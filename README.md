@@ -1,3 +1,4 @@
+
 <div align="center">
 
 ![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=500&size=18&duration=3500&pause=1500&color=68D391&center=true&vCenter=true&width=650&lines=Backend+Journey;Learning+by+building.;Node.js+%7C+Express+%7C+MongoDB+%7C+REST+APIs;One+concept.+One+file.+Every+day.)
@@ -68,30 +69,30 @@ Backend-Journey/
 │   │   ├── 01_Backend_to_Production.md
 │   │   └── 02_Full-Stack-Deployment-Practice.md
 │   │
-│   ├── 📁 Playlist-Tracking/              # live mini-project built while following along
-│   │   ├── node_modules/
-│   │   └── .env
-│   │
-│   └── 📁 Roadmap/
-│       ├── 00-START-HERE.md                # quick start guide - where to begin
-│       ├── Overview.md                     # complete course outline
-│       ├── 1-Introduction.md               # what is backend, client-server, HTTP basics
-│       ├── 2-Foundation.md                 # Node.js, npm, package.json, modules
-│       ├── 3-ExpressJS.md                  # Express setup, routing, middleware
-│       ├── 4-Databases.md                  # MongoDB, PostgreSQL, when to use what
-│       ├── 5-ORM-ODM.md                    # Mongoose, Sequelize, schema, models
-│       ├── 6-API-Development.md            # REST APIs, CRUD, auth, JWT
-│       ├── 7-Deployment.md                 # production, environment, hosting
-│       ├── Behind-The-Scenes.md            # how this repo/roadmap itself was structured
-│       │
-│       ├── 📁 Projects/
-│       │   ├── Project-Ideas.md            # project list with difficulty levels
-│       │   └── Project-Setup-Template.md   # boilerplate setup for every project
-│       │
-│       └── 📁 Resources/
-│           ├── Commands-Cheatsheet.md      # quick reference - npm, git, node commands
-│           ├── Links-and-Documentation.md  # official docs, useful references
-│           └── Useful-Libraries.md         # curated npm packages worth knowing
+│   └── 📁 Playlist-Tracking/              # live mini-project built while following along
+│       ├── node_modules/
+│       └── .env
+│   
+├── 📁 Roadmap/
+│    ├── 00-START-HERE.md                # quick start guide - where to begin
+│    ├── Overview.md                     # complete course outline
+│    ├── 1-Introduction.md               # what is backend, client-server, HTTP basics
+│    ├── 2-Foundation.md                 # Node.js, npm, package.json, modules
+│    ├── 3-ExpressJS.md                  # Express setup, routing, middleware
+│    ├── 4-Databases.md                  # MongoDB, PostgreSQL, when to use what
+│    ├── 5-ORM-ODM.md                    # Mongoose, Sequelize, schema, models
+│    ├── 6-API-Development.md            # REST APIs, CRUD, auth, JWT
+│    ├── 7-Deployment.md                 # production, environment, hosting
+│    ├── Behind-The-Scenes.md            # how this repo/roadmap itself was structured
+│    │
+│    ├── 📁 Projects/
+│    │   ├── Project-Ideas.md            # project list with difficulty levels
+│    │   └── Project-Setup-Template.md   # boilerplate setup for every project
+│    │
+│    └── 📁 Resources/
+│         ├── Commands-Cheatsheet.md      # quick reference - npm, git, node commands
+│         ├── Links-and-Documentation.md  # official docs, useful references
+│         └── Useful-Libraries.md         # curated npm packages worth knowing
 │
 ├── 📄 .gitignore
 ├── 📄 LICENSE
