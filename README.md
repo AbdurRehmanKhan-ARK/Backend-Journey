@@ -1,27 +1,10 @@
-
 <div align="center">
-
+  
+<img src="./Backend-Journey/assets/backend-logo.svg" width="220" alt="Backend Journey logo"/>
+  
 ![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=500&size=18&duration=3500&pause=1500&color=68D391&center=true&vCenter=true&width=650&lines=Backend+Journey;Learning+by+building.;Node.js+%7C+Express+%7C+MongoDB+%7C+REST+APIs;One+concept.+One+file.+Every+day.)
 
-<br/>
-
-**A structured JavaScript Backend learning repository | built alongside the Chai aur Code series.**
-_Every concept practiced in isolation. Every API built from scratch. Every session committed._
-
-<br/>
-
-![Node.js](https://img.shields.io/badge/Node.js-Runtime-339933?style=flat-square&logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-Framework-000000?style=flat-square&logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=flat-square&logo=mongodb&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-Frontend-646CFF?style=flat-square&logo=vite&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens&logoColor=white)
-![Series](https://img.shields.io/badge/Series-Chai%20aur%20Code-FF6B35?style=flat-square)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
-
 </div>
-
----
 
 ## About
 
