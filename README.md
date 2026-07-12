@@ -12,11 +12,11 @@ This repository documents a structured, concept-by-concept approach to learning 
 
 Alongside the notes, this repo now also holds the **actual Backend + Frontend fullstack project** (`Chai-Backend/Backend` and `Chai-Backend/Frontend`) built while following the deployment and fullstack modules - not just theory, but a real Express + Vite app wired together and deployed.
 
-> The goal is not just to watch and move on. Every session produces a committed file or a working piece of code. The commit history is the learning log.
-
+> The goal is not just to watch and move on. Every session produces a committed file or a working piece of code. The commit history is the learning log. <br/>
+> ⚠️ **Note:** The `Structure`, `Topics Roadmap`, and `Mega Project` sections below are living/WIP - they'll keep changing as the playlist progresses and new folders/files get added. Treat them as a snapshot, not a fixed blueprint.
 ---
 
-## Structure
+## Structure 🔄 *(subject to change)*
 
 ```
 Backend-Journey/
@@ -87,7 +87,7 @@ Backend-Journey/
 
 ---
 
-## Topics Roadmap
+## Topics Roadmap 🔄 *(subject to change)*
 
 | File | Module | Status |
 |------|--------|--------|
@@ -106,7 +106,7 @@ Backend-Journey/
 
 ---
 
-## 🎬 Mega Project
+## 🎬 Mega Project 🔄 *(subject to change)*
 
 Following [`hiteshchoudhary/chai-backend`](https://github.com/hiteshchoudhary/chai-backend) - a complete, production-shaped backend for a YouTube-style video hosting platform.
 
