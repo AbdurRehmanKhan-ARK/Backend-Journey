@@ -5,7 +5,16 @@ dotenv.config({
   path: "./.env",
 });
 
-connectDB();
+connectDB()
+  .then(() => {
+    app.listen(process.env.PORT || 8000, () => {
+        console.log(`Server is listening on port ${process.env.PORT}`)
+    })
+  })
+  .catch((error) => {
+    console.log("Error in database connection", error);
+  });
+
 /*
 
 THIS IS THE FIRST APPROACH OF CONNECTION A DATABASE IN MERN PROJECT USING MONGOOSE LIBRARY
