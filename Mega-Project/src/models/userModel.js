@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       index: true, // useful in searching in database
     },
-    username: {
+    email: {
       type: String,
       required: true,
       unique: true,
@@ -28,9 +28,6 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String, // cloudinary URL stored here
       required: true,
-    },
-    avatar: {
-      type: String,
     },
     watchHistory: [
       {
@@ -52,46 +49,46 @@ const userSchema = new mongoose.Schema(
 );
 
 // using a hook/middleware to encrypt user passwords
-// dont use arrow func syntax because it does not bind this keyword whereas we crucally need this keyword to get current context/user-details and use async  because its a long running task
+// don't use arrow function syntax - it doesn't bind 'this', and we need 'this'
+// to access the current document. Using async because hashing is a long-running task.
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next(); // because only on password field modification we want to encrypt not on other fields modifications too (like username)
-  this.password = bcrypt.hash(this.password, 10);
+  if (!this.isModified("password")) return next(); // only hash if password field actually changed
+  this.password = await bcrypt.hash(this.password, 10); // must await — hash() returns a Promise
   next();
 });
 
-// now we will design a method to verify that user's given password is correct or not at certain stages
+// verify user's given password against the stored hashed password
 userSchema.methods.isValidPassword = async function (password) {
-  return await bcrypy.compare(password, this.password); // (passwordEntered, hashedPasswordStoredInDb)
+  return await bcrypt.compare(password, this.password); // (passwordEntered, hashedPasswordInDb)
 };
 
-// another method to generate access and refresh Tokens , both are JWT (going with session and cookie based authorization)
-
-// access token usually holds high payload
+// access token usually holds high payload — short-lived
 userSchema.methods.generateAccessToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
       email: this.email,
       username: this.username,
       fullname: this.fullname,
-    },process.env.ACCESS_TOKEN_SECRET,
-    { 
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRY 
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
   );
 };
 
-// whereas refresh token holds low payload like ID
+// refresh token holds low payload (just ID) — long-lived
 userSchema.methods.generateRefreshToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
-    },process.env.REFRESH_TOKEN_SECRET,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
     {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
   );
 };
 
-userSchema.methods.generateAccessToken = function () {};
 export const User = mongoose.model("User", userSchema);
