@@ -16,6 +16,11 @@ HTTP (HyperText Transfer Protocol) is the foundation of web communication.
 | PATCH  | Partial update         | `PATCH /users/1` - Partially update user |
 | DELETE | Remove data            | `DELETE /users/1` - Delete user          |
 
+### Bonus: New HTTP Method - QUERY (RFC 10008, June 2026)
+First new standard HTTP method since PATCH (2010). Fills the gap between
+GET (safe, no body) and POST (has body, not cacheable) - a safe, idempotent,
+cacheable method that carries a request body. Useful for complex search/filter
+APIs. Very new - not yet widely supported in frameworks (still experimental).
 #### HTTP Status Codes
 
 - **2xx** - Success (200 OK, 201 Created, 204 No Content)
