@@ -10,22 +10,37 @@ import {
   isValidFullname,
 } from "../utils/validators.js";
 
-const generateAccessAndRefreshTokens = async(userId) => {
-  try { 
+// Generates a fresh access + refresh token pair for a given user, and
+// persists the refresh token on the User document (see token-theory
+// notes in userModel.js for WHY we store it DB-side - it's what lets
+// us revoke sessions server-side later, e.g. on logout).
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
     const user = await User.findById(userId);
+
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-    // save refresh token to DB
-    user.refreshToken = refreshToken;
-    user.save({validateBeforeSave: false}); // to skip validation of all fields of user schema just do this only, because by default save() will validate all fields 
-  } catch (error) {
-    throw new ApiError(500, "Failed to generate access and refresh tokens"); 
-  }
-}
 
+    // Save the new refresh token to this user's DB record, so future
+    // /refresh-token requests can be validated against it.
+    user.refreshToken = refreshToken;
+
+    // validateBeforeSave: false --> we're only updating ONE field
+    // (refreshToken) here, not re-submitting the whole user object.
+    // Without this, Mongoose would re-run validation on every schema
+    // field (password strength, email format, etc.) on every login -
+    // unnecessary and would likely fail since we don't have the raw
+    // password in-hand here.
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(500, "Failed to generate access and refresh tokens");
+  }
+};
 
 const registerUser = asyncHandler(async (req, res) => {
-  // TODO -> Registration flow:
+  // Registration flow:
   // 1. Get user details from frontend (or Postman)
   // 2. Validate the provided data
   // 3. Check if user already exists (already registered via username or email)
@@ -126,33 +141,123 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  // TODO -> Logging flow:
-  // 1. Get user details from frontend -> req.body (or Postman)
-  // 2. Validate the user's username or email if not then you aren't a user (not registered yet) 
-  // 3. Procedingly, now check if password is correct
-  // 4. If password is correct then create a JWT token otherwise return error
-  // 5. Generate access and refresh tokens and sent them to  user via secure cookies 
-  // 6. Check if user successfully logged in, if yes then return response as "User logged in successfully"
+  // Login flow:
+  // 1. Get username/email + password from frontend (or Postman)
+  // 2. Require AT LEAST ONE of username/email to be present
+  // 3. Look the user up in the DB by that identifier
+  // 4. Verify the given password against the stored hashed password
+  // 5. If valid, generate access + refresh tokens
+  // 6. Send tokens back via secure httpOnly cookies (and in the JSON
+  //    body too, for clients that can't use cookies - e.g. mobile apps)
+  // 7. Respond with logged-in user info (sensitive fields stripped)
 
-  // STEP 1: Get user details from frontend 
-  const {username,email,password} = req.body;
-  
-  // STEP 2: Validate the presence of user details (username or email) 
-  // but actually at this step it should be finalized that which one to use as authentication, username or email BUT we are going with both for now
-  if(!username || !email){
-    throw new ApiError(400,"Username or email is required")
+  // STEP 1: Get user details from frontend
+  const { username, email, password } = req.body;
+
+  // STEP 2: User should be able to log in with EITHER username OR
+  // email - not both required. Using && here (not ||): we only throw
+  // if BOTH are missing. If we used ||, a user providing just their
+  // email (and no username) would incorrectly get rejected, even
+  // though that's a perfectly valid way to log in.
+  if (!username && !email) {
+    throw new ApiError(400, "Username or email is required");
   }
-  // Now if one of them is present correctly inside the db then proceed
-  const user = await User.findOne({$or: [{username},{email}]});
-  if(!user){
-    throw new ApiError(404,"Invalid user credentials")
-  }
-  // we used 'Invalid user credentials' because we don't want hacker boy to know which one is wrong
-  // STEP 3: Check if password is correct
-  const isPasswordCorrect = await user.isValidPassword(password);
-  if(!isPasswordCorrect){
+
+  // STEP 3: find the user by whichever identifier was provided
+  const user = await User.findOne({ $or: [{ username }, { email }] });
+
+  // STEP 4: verify user exists AND password is correct.
+  // IMPORTANT - both failure cases below use the SAME error message
+  // AND the same status code (401). If "user not found" returned 404
+  // while "wrong password" returned 401, an attacker could still tell
+  // the two cases apart just by reading the status code, even with an
+  // identical message - defeating the point of using one generic
+  // message in the first place. Keeping status code AND message
+  // identical is what actually prevents username/email enumeration.
+  if (!user) {
     throw new ApiError(401, "Invalid user credentials");
   }
 
-})
-export { registerUser, loginUser };
+  const isPasswordCorrect = await user.isValidPassword(password);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(401, "Invalid user credentials");
+  }
+
+  // STEP 5: generate a fresh token pair now that identity is confirmed
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+    user._id
+  );
+
+  // Re-fetch user post-token-generation, excluding sensitive fields -
+  // this is what actually goes back in the response body.
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
+
+  // STEP 6: cookie options
+  // httpOnly: true  --> JS on the frontend CANNOT read/modify this
+  //                     cookie (document.cookie won't show it) - this
+  //                     is what protects it from XSS-based token theft
+  // secure: true    --> cookie is only sent over HTTPS, never plain HTTP
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(200, "User logged in successfully", {
+        user: loggedInUser,
+        accessToken,
+        refreshToken,
+        // sending tokens in the body too (not just cookies) is a
+        // common pattern - covers clients that can't rely on cookies
+        // at all, e.g. native mobile apps making raw API calls
+      })
+    );
+});
+
+const logoutUser = asyncHandler(async (req, res) => {
+  // This is the point of code where we actually make our first user
+  // defined middleware, because there's no other way to know WHICH
+  // user wants to log out - unlike register/login, there's no
+  // req.body with credentials here. So we made a custom middleware
+  // in ../middlewares/authMiddleware.js (verifyJWT) that runs BEFORE
+  // this controller, verifies the access token, and attaches the
+  // actual user document as req.user.
+
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      // $unset REMOVES the field entirely from the document.
+      // NOTE: $set: { refreshToken: undefined } does NOT work here -
+      // MongoDB silently ignores "undefined" as a $set value since
+      // it isn't a valid BSON type, so the old refreshToken would
+      // stay in the DB unchanged - defeating the purpose of logout
+      // (the old token would still be usable for /refresh-token).
+      $unset: {
+        refreshToken: 1,
+      },
+    },
+    {
+      new: true, // return the updated (post-unset) document
+    }
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, "User logged out successfully"));
+});
+
+export { registerUser, loginUser, logoutUser };
