@@ -10,8 +10,22 @@ import {
   isValidFullname,
 } from "../utils/validators.js";
 
+const generateAccessAndRefreshTokens = async(userId) => {
+  try { 
+    const user = await User.findById(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    // save refresh token to DB
+    user.refreshToken = refreshToken;
+    user.save({validateBeforeSave: false}); // to skip validation of all fields of user schema just do this only, because by default save() will validate all fields 
+  } catch (error) {
+    throw new ApiError(500, "Failed to generate access and refresh tokens"); 
+  }
+}
+
+
 const registerUser = asyncHandler(async (req, res) => {
-  // Registration flow:
+  // TODO -> Registration flow:
   // 1. Get user details from frontend (or Postman)
   // 2. Validate the provided data
   // 3. Check if user already exists (already registered via username or email)
@@ -111,4 +125,34 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, "User created successfully", createdUser));
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+  // TODO -> Logging flow:
+  // 1. Get user details from frontend -> req.body (or Postman)
+  // 2. Validate the user's username or email if not then you aren't a user (not registered yet) 
+  // 3. Procedingly, now check if password is correct
+  // 4. If password is correct then create a JWT token otherwise return error
+  // 5. Generate access and refresh tokens and sent them to  user via secure cookies 
+  // 6. Check if user successfully logged in, if yes then return response as "User logged in successfully"
+
+  // STEP 1: Get user details from frontend 
+  const {username,email,password} = req.body;
+  
+  // STEP 2: Validate the presence of user details (username or email) 
+  // but actually at this step it should be finalized that which one to use as authentication, username or email BUT we are going with both for now
+  if(!username || !email){
+    throw new ApiError(400,"Username or email is required")
+  }
+  // Now if one of them is present correctly inside the db then proceed
+  const user = await User.findOne({$or: [{username},{email}]});
+  if(!user){
+    throw new ApiError(404,"Invalid user credentials")
+  }
+  // we used 'Invalid user credentials' because we don't want hacker boy to know which one is wrong
+  // STEP 3: Check if password is correct
+  const isPasswordCorrect = await user.isValidPassword(password);
+  if(!isPasswordCorrect){
+    throw new ApiError(401, "Invalid user credentials");
+  }
+
+})
+export { registerUser, loginUser };
