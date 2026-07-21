@@ -145,7 +145,7 @@ npm run dev
 ## Series Reference
 
 This repository follows the **JavaScript Backend series by [Chai aur Code](https://www.youtube.com/@chaiaurcode)** on YouTube.
-Each file corresponds to a video or concept from the series.
+Each file corresponds to a video or concept from the series that is well explained and easy to understand.
 
 ---
 
