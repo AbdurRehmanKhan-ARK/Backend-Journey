@@ -323,4 +323,79 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+const changePassword = asyncHandler(async (req, res) => {
+  // Change-password flow (protected route - depends on req.user from verifyJWT):
+  // 1. Get old password, new password, and confirmation from the frontend
+  // 2. Ensure all three fields are present
+  // 3. Ensure newPassword and confirmPassword actually match
+  // 4. Ensure newPassword meets the same strength requirements as registration
+  // 5. Fetch the current user, verify oldPassword is actually correct
+  // 6. If verified, assign the new password (hashing happens automatically
+  //    via the pre("save") hook - we never hash manually here)
+
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new ApiError(400, "New password and confirm password do not match");
+  }
+
+  // Keep the same strength bar as registration - otherwise a user could
+  // register with a strong password but downgrade to a weak one here,
+  // making the registration-time validation pointless.
+  if (!isStrongPassword(newPassword)) {
+    throw new ApiError(
+      400,
+      "New password must be at least 8 characters and include uppercase, lowercase, number, and special character"
+    );
+  }
+
+  // req.user is populated by the verifyJWT middleware - this route
+  // must be wired with verifyJWT in the routes file, or req.user will
+  // be undefined and this line will throw.
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isPasswordCorrect = await user.isValidPassword(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Old password is incorrect");
+  }
+
+  // Just assign the plain new password here - the pre("save") hook
+  // detects this.isModified("password") and hashes it automatically.
+  // validateBeforeSave: false skips full-schema re-validation (same
+  // reasoning as in generateAccessAndRefreshTokens - we're only
+  // touching one field, not resubmitting the whole document).
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Password changed successfully"));
+});
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  // Simple protected route - verifyJWT already did the identity check
+  // and attached req.user, so this just echoes it back. No DB call
+  // needed here since req.user is already the freshly-fetched,
+  // sensitive-fields-stripped user document from the middleware.
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Current user fetched successfully", req.user));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  getCurrentUser,
+  changePassword,
+};
