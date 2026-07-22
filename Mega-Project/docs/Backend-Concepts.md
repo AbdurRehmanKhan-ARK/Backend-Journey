@@ -74,10 +74,10 @@ A JWT, once issued, is technically valid until it expires - the server can't "un
 
 1. User logs in with credentials (the *only* time a raw password touches the wire)
 2. Server verifies, issues both tokens, saves the refresh token to the DB, sends both back as `httpOnly` cookies
-3. Every protected request → access token is verified (`jwt.verify`) → request proceeds
-4. Access token expires → client calls `/refresh-token`, sending the refresh token
+3. Every protected request --> access token is verified (`jwt.verify`) --> request proceeds
+4. Access token expires --> client calls `/refresh-token`, sending the refresh token
 5. Server checks: is the refresh token valid *and* does it match the DB record? If yes, issues a fresh token pair
-6. Refresh token eventually expires too → user must log in again with credentials
+6. Refresh token eventually expires too --> user must log in again with credentials
 
 ### Why `httpOnly` and `secure` cookie flags matter
 
@@ -129,12 +129,12 @@ This is how password hashing happens *transparently* - no controller needs to re
 
 ---
 
-## 7. File Upload Flow - Multer → Local Temp → Cloudinary
+## 7. File Upload Flow - Multer --> Local Temp --> Cloudinary
 
 Direct browser-to-cloud uploads are avoided in favor of a two-step flow:
 
 ```
-Browser → Multer (temp save on our server) → Cloudinary (permanent storage) → temp file deleted
+Browser --> Multer (temp save on our server) --> Cloudinary (permanent storage) --> temp file deleted
 ```
 
 **Why not upload directly from the browser to Cloudinary?**
