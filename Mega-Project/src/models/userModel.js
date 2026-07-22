@@ -55,8 +55,9 @@ const userSchema = new mongoose.Schema(
 // don't use arrow function syntax - it doesn't bind 'this', and we need 'this'
 // to access the current document. Using async because hashing is a long-running task.
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next(); // only hash if password field actually changed
-  this.password = await bcrypt.hash(this.password, 10); // must await — hash() returns a Promise
+  if (!this.isModified("password"))
+    // early exit, no next() needed
+    this.password = await bcrypt.hash(this.password, 10); // must await — hash() returns a Promise
 });
 
 // verify user's given password against the stored hashed password
