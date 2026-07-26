@@ -68,4 +68,37 @@ const uploadOnCloudinary = async (filePath) => {
   }
 };
 
-export { uploadOnCloudinary };
+
+// Deletes a file from Cloudinary given its full URL. Used when replacing
+// an avatar/coverImage - the OLD file must be explicitly deleted, since
+// updating the DB reference alone does NOT remove the actual file from
+// Cloudinary's storage; it just orphans it there permanently.
+const deleteFromCloudinary = async (fileUrl) => {
+  try {
+    if (!fileUrl) return null;
+
+    // Cloudinary URLs look like:
+    // http://res.cloudinary.com/<cloud_name>/image/upload/v<version>/<public_id>.<extension>
+    // The public_id is everything after the version segment, minus the
+    // file extension - Cloudinary needs the public_id (not the full URL)
+    // to identify which file to delete.
+    const urlParts = fileUrl.split("/");
+    const fileNameWithExtension = urlParts[urlParts.length - 1];
+    const publicId = fileNameWithExtension.split(".")[0];
+
+    const response = await cloudinary.uploader.destroy(publicId);
+
+    console.log("File deleted from cloudinary:", publicId);
+    return response;
+  } catch (error) {
+    // Deletion failing shouldn't crash the whole request - the new
+    // file is already uploaded and the DB already updated by this
+    // point in the calling controller, so we just log and move on.
+    // Worst case: one orphaned file remains, which is the same
+    // problem we had before, not a NEW problem.
+    console.log("Failed to delete file from cloudinary:", error);
+    return null;
+  }
+};
+
+export { uploadOnCloudinary, deleteFromCloudinary };

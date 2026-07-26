@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/userModel.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
   isValidEmail,
@@ -10,6 +10,20 @@ import {
   isValidFullname,
 } from "../utils/validators.js";
 import jwt from "jsonwebtoken";
+
+// Cookie options used across all auth endpoints that set/clear tokens.
+// httpOnly: true  --> JS on the frontend cannot read/modify this cookie
+//                     (document.cookie won't show it) - protects it
+//                     from XSS-based token theft.
+// secure: only forces HTTPS-only cookies in production. On localhost
+//         (plain HTTP, during development), browsers silently refuse to
+//         set a cookie marked secure: true over an insecure connection -
+//         so this is tied to NODE_ENV to keep local testing working
+//         while still being strict in production.
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+};
 
 // Generates a fresh access + refresh token pair for a given user, and
 // persists the refresh token on the User document (see token-theory
@@ -84,7 +98,12 @@ const registerUser = asyncHandler(async (req, res) => {
     );
   }
 
-  // Step 3: check if user already exists - MUST await this, findOne() returns a Promise
+  // Step 3: check if user already exists - this is a DB call, so it
+  // returns a Promise and must be awaited. Without await, existedUser
+  // would be the Promise object itself, which is always truthy -
+  // meaning this check would incorrectly block EVERY registration
+  // attempt, since a Promise object is never falsy regardless of what
+  // it eventually resolves to.
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
@@ -96,8 +115,12 @@ const registerUser = asyncHandler(async (req, res) => {
   // Step 4: Multer has already placed the files in a temp folder on our server.
   // req.files comes from multer's .fields() middleware - each field name maps
   // to an array of file objects (even if only one file is uploaded per field).
-  // Optional chaining used at every level since these fields might not exist
-  // if the user didn't attach a file at all.
+  // Optional chaining is used at EVERY level (req.files?.avatar?.[0]?.path)
+  // because any of these can be missing: req.files itself is undefined if
+  // no files were sent at all, req.files.avatar is undefined if that
+  // specific field was never attached, and without chaining at each step
+  // this would throw a raw TypeError instead of falling through to our
+  // own "Avatar is required" check below.
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
@@ -105,7 +128,11 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar is required");
   }
 
-  // Step 5: upload from temp local storage to Cloudinary (permanent storage)
+  // Step 5: upload from temp local storage to Cloudinary (permanent storage).
+  // Files never go directly from the browser to Cloudinary - see
+  // cloudinary.js for the full reasoning (credentials must stay
+  // server-side, and we need to validate before anything gets
+  // permanently stored).
   const avatarResponse = await uploadOnCloudinary(avatarLocalPath);
   const coverImageResponse = await uploadOnCloudinary(coverImageLocalPath);
 
@@ -115,7 +142,8 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // Step 6: create the user document in MongoDB
-  // (password gets hashed automatically here via the pre("save") hook on the schema)
+  // (password gets hashed automatically here via the pre("save") hook on the schema -
+  // we intentionally pass the raw password, never hash it manually in the controller)
   const user = await User.create({
     username,
     email,
@@ -127,7 +155,11 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // Step 7: fetch the freshly created user again, excluding sensitive fields.
   // .select("-password -refreshToken") tells Mongoose NOT to include these
-  // fields in the returned document - this is what actually goes back in the response.
+  // fields in the returned document - this is what actually goes back in
+  // the response. We re-fetch instead of just stripping fields off the
+  // `user` object above because Mongoose documents carry internal
+  // metadata/methods that we don't want leaking into the API response -
+  // a fresh, selected query gives us a clean plain result.
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
@@ -153,29 +185,27 @@ const loginUser = asyncHandler(async (req, res) => {
   //    body too, for clients that can't use cookies - e.g. mobile apps)
   // 7. Respond with logged-in user info (sensitive fields stripped)
 
-  // STEP 1: Get user details from frontend
   const { username, email, password } = req.body;
 
-  // STEP 2: User should be able to log in with EITHER username OR
-  // email - not both required. Using && here (not ||): we only throw
-  // if BOTH are missing. If we used ||, a user providing just their
+  // A user should be able to log in with EITHER username OR email -
+  // not both required. We use && here (not ||): we only throw if
+  // BOTH are missing. If we used ||, a user providing just their
   // email (and no username) would incorrectly get rejected, even
   // though that's a perfectly valid way to log in.
   if (!username && !email) {
     throw new ApiError(400, "Username or email is required");
   }
 
-  // STEP 3: find the user by whichever identifier was provided
   const user = await User.findOne({ $or: [{ username }, { email }] });
 
-  // STEP 4: verify user exists AND password is correct.
-  // IMPORTANT - both failure cases below use the SAME error message
-  // AND the same status code (401). If "user not found" returned 404
-  // while "wrong password" returned 401, an attacker could still tell
-  // the two cases apart just by reading the status code, even with an
-  // identical message - defeating the point of using one generic
-  // message in the first place. Keeping status code AND message
-  // identical is what actually prevents username/email enumeration.
+  // Both failure cases below - "no such user" and "wrong password" -
+  // intentionally return the EXACT same status code (401) and the
+  // exact same message. If "user not found" instead returned 404
+  // while "wrong password" returned 401, an attacker probing random
+  // usernames/emails could tell which ones exist in the system just
+  // by reading the status code, even with an identical message shown
+  // on-screen. Keeping status code AND message identical is what
+  // actually prevents this kind of account enumeration.
   if (!user) {
     throw new ApiError(401, "Invalid user credentials");
   }
@@ -186,7 +216,6 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid user credentials");
   }
 
-  // STEP 5: generate a fresh token pair now that identity is confirmed
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
@@ -197,50 +226,42 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  // STEP 6: cookie options
-  // httpOnly: true  --> JS on the frontend CANNOT read/modify this
-  //                     cookie (document.cookie won't show it) - this
-  //                     is what protects it from XSS-based token theft
-  // secure: true    --> cookie is only sent over HTTPS, never plain HTTP
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(200, "User logged in successfully", {
         user: loggedInUser,
         accessToken,
         refreshToken,
-        // sending tokens in the body too (not just cookies) is a
-        // common pattern - covers clients that can't rely on cookies
-        // at all, e.g. native mobile apps making raw API calls
+        // Sending tokens in the body too (not just cookies) covers
+        // clients that can't rely on cookies at all - e.g. native
+        // mobile apps making raw API calls without a cookie jar.
       })
     );
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-  // This is the point of code where we actually make our first user
-  // defined middleware, because there's no other way to know WHICH
-  // user wants to log out - unlike register/login, there's no
-  // req.body with credentials here. So we made a custom middleware
-  // in ../middlewares/authMiddleware.js (verifyJWT) that runs BEFORE
-  // this controller, verifies the access token, and attaches the
-  // actual user document as req.user.
+  // This is the first controller where we actually need a custom
+  // middleware, because unlike register/login, there's no req.body
+  // with credentials here - there's no way to know WHICH user wants
+  // to log out just from the request itself. So a custom middleware
+  // (verifyJWT, in ../middlewares/authMiddleware.js) runs BEFORE this
+  // controller, verifies the access token, and attaches the actual
+  // user document as req.user.
 
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      // $unset REMOVES the field entirely from the document.
-      // NOTE: $set: { refreshToken: undefined } does NOT work here -
-      // MongoDB silently ignores "undefined" as a $set value since
-      // it isn't a valid BSON type, so the old refreshToken would
-      // stay in the DB unchanged - defeating the purpose of logout
-      // (the old token would still be usable for /refresh-token).
+      // $unset removes the field entirely from the document.
+      // Using $set: { refreshToken: undefined } instead would NOT
+      // work here - MongoDB silently ignores "undefined" as a $set
+      // value since it isn't a valid BSON type, so the old
+      // refreshToken would stay in the DB completely unchanged,
+      // which would defeat the entire purpose of logout (the old
+      // refresh token would still be valid and usable against
+      // /refresh-token afterward).
       $unset: {
         refreshToken: 1,
       },
@@ -250,15 +271,10 @@ const logoutUser = asyncHandler(async (req, res) => {
     }
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
     .json(new ApiResponse(200, "User logged out successfully"));
 });
 
@@ -270,7 +286,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   //    (this is the revocation check - see token theory notes)
   // 4. If valid, issue a brand new token pair
 
-  // STEP 1: Get refresh token from frontend
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
 
@@ -279,7 +294,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   try {
-    // STEP 2: verify signature + expiry of the incoming token
+    // jwt.verify does two things at once: checks the signature against
+    // our secret (proving nobody tampered with the payload), and checks
+    // the token hasn't expired. If either fails, it throws - which is
+    // why this whole block is wrapped in try-catch.
     const decodedToken = jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
@@ -291,26 +309,24 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Invalid refresh token");
     }
 
-    // STEP 3: does this token match what's currently stored in the DB?
-    // If someone logged out (which $unset's refreshToken) or a newer
-    // token was already issued, this old one won't match anymore.
+    // This is the actual revocation check: does the incoming token
+    // match what's CURRENTLY stored in the DB for this user? If the
+    // user logged out ($unset'd their refreshToken) or a newer token
+    // was already issued since this one was handed out, this old
+    // token won't match anymore - even though its signature and
+    // expiry are still technically valid. This is what makes
+    // server-side session revocation possible at all with JWTs.
     if (incomingRefreshToken !== user?.refreshToken) {
       throw new ApiError(401, "Refresh token is expired or already used");
     }
 
-    // STEP 4: issue a fresh token pair
     const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshTokens(user._id);
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-    };
-
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("accessToken", accessToken, cookieOptions)
+      .cookie("refreshToken", newRefreshToken, cookieOptions)
       .json(
         new ApiResponse(200, "Access token refreshed successfully", {
           accessToken,
@@ -343,9 +359,10 @@ const changePassword = asyncHandler(async (req, res) => {
     throw new ApiError(400, "New password and confirm password do not match");
   }
 
-  // Keep the same strength bar as registration - otherwise a user could
-  // register with a strong password but downgrade to a weak one here,
-  // making the registration-time validation pointless.
+  // Enforcing the same strength bar as registration matters here -
+  // otherwise a user could register with a strong password but then
+  // downgrade to something weak through this endpoint, which would
+  // make the registration-time validation pointless.
   if (!isStrongPassword(newPassword)) {
     throw new ApiError(
       400,
@@ -369,10 +386,9 @@ const changePassword = asyncHandler(async (req, res) => {
   }
 
   // Just assign the plain new password here - the pre("save") hook
-  // detects this.isModified("password") and hashes it automatically.
-  // validateBeforeSave: false skips full-schema re-validation (same
-  // reasoning as in generateAccessAndRefreshTokens - we're only
-  // touching one field, not resubmitting the whole document).
+  // detects this.isModified("password") and hashes it automatically,
+  // so manually hashing it in the controller would double-hash it
+  // and break login afterward.
   user.password = newPassword;
   await user.save({ validateBeforeSave: false });
 
@@ -395,9 +411,9 @@ const editAccountDetails = asyncHandler(async (req, res) => {
   // Update account flow:
   // 1. Get fullname/email from frontend
   // 2. Validate both are present and properly formatted
-  // 3. Update directly in DB via findByIdAndUpdate - single query,
-  //    no need to fetch, manually assign, then save separately
-  // 4. Return updated document (sensitive fields excluded)
+  // 3. Confirm the new email isn't already taken by a DIFFERENT user
+  // 4. Update directly in DB via findByIdAndUpdate
+  // 5. Return updated document (sensitive fields excluded)
 
   const { fullname, email } = req.body;
 
@@ -413,15 +429,33 @@ const editAccountDetails = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Fullname must be between 3 and 50 characters");
   }
 
+  // The schema has `email: { unique: true }`, so MongoDB WILL reject
+  // a duplicate at the database level - but that rejection comes back
+  // as a raw MongoDB duplicate-key error, not one of our own ApiError
+  // instances, which breaks the consistent error shape the rest of
+  // the API relies on. Checking explicitly here lets us throw a
+  // proper, predictable ApiError instead. The $ne (not-equal) on _id
+  // excludes the current user themselves from the match - otherwise
+  // a user re-submitting their OWN unchanged email would incorrectly
+  // get flagged as a duplicate of themselves.
+  const existingUser = await User.findOne({
+    email,
+    _id: { $ne: req.user._id },
+  });
+
+  if (existingUser) {
+    throw new ApiError(409, "Email already in use by another account");
+  }
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: { fullname, email },
     },
     {
-      new: true,
+      new: true, // return the document AFTER the update, not before
     }
-  ).select("-password -refreshToken"); // exclude BOTH sensitive fields, not just password
+  ).select("-password -refreshToken");
 
   return res
     .status(200)
@@ -431,9 +465,14 @@ const editAccountDetails = asyncHandler(async (req, res) => {
 const updateAvatar = asyncHandler(async (req, res) => {
   // Update avatar flow:
   // 1. Get avatar from frontend (req.file - single file upload via multer.single())
-  // 2. Upload to Cloudinary
-  // 3. Update directly in DB via findByIdAndUpdate
-  // 4. Return updated document (sensitive fields excluded)
+  // 2. Fetch the CURRENT user first, to know what the OLD avatar URL was
+  //    (needed to delete it from Cloudinary later - once overwritten in
+  //    the DB, we'd have no way to know what the old URL even was)
+  // 3. Upload the new one to Cloudinary
+  // 4. Update the DB record with the new URL
+  // 5. Delete the OLD file from Cloudinary now that the new one is
+  //    safely stored and the DB reference is updated
+  // 6. Return updated document (sensitive fields excluded)
 
   const avatarLocalPath = req.file?.path;
 
@@ -441,11 +480,12 @@ const updateAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar is required");
   }
 
+  // Grab the old avatar URL BEFORE it gets overwritten in the DB
+  const oldUserData = await User.findById(req.user?._id);
+  const oldAvatarUrl = oldUserData?.avatar;
+
   const avatar = await uploadOnCloudinary(avatarLocalPath);
 
-  // Check avatar itself first (could be null if upload failed entirely) -
-  // accessing avatar.url directly on a null value would crash instead of
-  // throwing our intended ApiError.
   if (!avatar?.url) {
     throw new ApiError(400, "Avatar upload failed on cloudinary");
   }
@@ -456,19 +496,30 @@ const updateAvatar = asyncHandler(async (req, res) => {
     { new: true }
   ).select("-password -refreshToken");
 
+  // Delete the OLD avatar from Cloudinary now that everything above
+  // succeeded - only deleting AFTER a successful DB update means we
+  // never end up with a user record pointing to a deleted file if
+  // something above had failed instead.
+  if (oldAvatarUrl) {
+    await deleteFromCloudinary(oldAvatarUrl);
+  }
+
   return res
     .status(200)
     .json(new ApiResponse(200, "Avatar updated successfully", user));
 });
 
 const updateCoverImage = asyncHandler(async (req, res) => {
-  // Update cover image flow - same pattern as updateAvatar above.
+  // Same pattern as updateAvatar above.
 
   const coverLocalPath = req.file?.path;
 
   if (!coverLocalPath) {
     throw new ApiError(400, "Cover image is required");
   }
+
+  const oldUserData = await User.findById(req.user?._id);
+  const oldCoverImageUrl = oldUserData?.coverImage;
 
   const cover = await uploadOnCloudinary(coverLocalPath);
 
@@ -481,6 +532,10 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     { $set: { coverImage: cover.url } },
     { new: true }
   ).select("-password -refreshToken");
+
+  if (oldCoverImageUrl) {
+    await deleteFromCloudinary(oldCoverImageUrl);
+  }
 
   return res
     .status(200)
@@ -495,6 +550,6 @@ export {
   getCurrentUser,
   changePassword,
   updateAvatar,
-  updateCoverImage, 
+  updateCoverImage,
   editAccountDetails,
 };
