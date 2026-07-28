@@ -16,10 +16,7 @@ import { verifyJWT } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
-// --------------------------------------------------------------------
 // PUBLIC ROUTES - no auth required, since these ARE the auth entry points
-// --------------------------------------------------------------------
-
 router.route("/register").post(
   // Multer must run BEFORE registerUser - it parses the multipart
   // form-data and places files into req.files, so the controller can
@@ -45,11 +42,9 @@ router.route("/login").post(loginUser);
 // instead, which is verified manually inside the controller itself.
 router.route("/refresh-token").post(refreshAccessToken);
 
-// --------------------------------------------------------------------
 // SECURED ROUTES - verifyJWT runs first on all of these, populating
 // req.user before the actual controller executes. Without req.user,
 // every one of these controllers would crash or behave incorrectly.
-// --------------------------------------------------------------------
 
 router.route("/logout").post(verifyJWT, logoutUser);
 
