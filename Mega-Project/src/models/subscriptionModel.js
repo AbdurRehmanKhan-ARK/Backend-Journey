@@ -32,3 +32,19 @@ import mongoose, { Schema } from "mongoose";
 //      many subscribers, AND a single subscriber can subscribe to
 //      many channels, all without either side holding a growing
 //      array
+
+const subscriptionSchema = new Schema(
+  {
+    subscriber: {
+      type: Schema.Types.ObjectId,
+      ref: "User", // the user who is doing the subscribing
+    },
+    channel: {
+      type: Schema.Types.ObjectId,
+      ref: "User", // the user being subscribed to (acting as a "channel")
+    },
+  },
+  { timestamps: true }
+);
+
+export const Subscription = mongoose.model("Subscription", subscriptionSchema);
