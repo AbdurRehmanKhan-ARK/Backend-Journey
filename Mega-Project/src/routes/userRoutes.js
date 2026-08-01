@@ -9,6 +9,7 @@ import {
   editAccountDetails,
   updateAvatar,
   updateCoverImage,
+  getWatchHistory,
 } from "../controllers/userController.js";
 
 import { upload } from "../middlewares/multerMiddleware.js";
@@ -69,5 +70,21 @@ router
 router
   .route("/update-cover-image")
   .patch(verifyJWT, upload.single("coverImage"), updateCoverImage);
+
+// GET (read-only, nothing modified) - :username is a URL route
+// parameter (accessed via req.params in the controller), not a query
+// string or body field. verifyJWT is used here NOT to block
+// unauthenticated access (isSubscribed uses req.user?._id with
+// optional chaining, so it degrades gracefully to `false` for a
+// logged-out visitor), but simply so req.user is available AT ALL for
+// the isSubscribed check to work when someone IS logged in.
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
+
+
+// GET (not POST) - this only READS data, nothing is being created or
+// modified. Uses an aggregation pipeline internally (see
+// getWatchHistory in userController.js) to join watchHistory video
+// IDs into full video documents, plus each video's owner info.
+router.route("/watch-history").get(verifyJWT, getWatchHistory);
 
 export default router;
