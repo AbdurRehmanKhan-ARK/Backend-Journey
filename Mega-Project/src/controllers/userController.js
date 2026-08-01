@@ -597,15 +597,134 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     },
   ]);
 
-  if(!channel?.length) // if the channel doesn't exist
+  if (!channel?.length) // if the channel doesn't exist
   {
     throw new ApiError(404, "Channel does not exists");
   } else {
     return res
-    .status(200)
-    .json(new ApiResponse(200, "Channel profile fetched successfully", channel[0])); 
+      .status(200)
+      .json(
+        new ApiResponse(200, "Channel profile fetched successfully", channel[0])
+      );
   }
 });
+
+const getWatchHistory = asyncHandler(async (req, res) => {
+  // Why aggregate() instead of a simple findById() + populate() here:
+  // watchHistory is an array of Video ObjectIds on the User document.
+  // A simple .populate("watchHistory") would give us the video data,
+  // but each video's "owner" field would STILL just be an ObjectId -
+  // populate() only resolves ONE level deep by default. We need TWO
+  // levels resolved (User -> Videos -> each Video's Owner), which is
+  // exactly what a nested $lookup inside the aggregation pipeline lets
+  // us do in a single database round-trip, instead of multiple queries.
+
+  const user = await User.aggregate([
+    // STAGE 1: $match - filters down to just the current logged-in user.
+    // This is the aggregation equivalent of a WHERE clause / findOne().
+    //
+    // WHY "new mongoose.Types.ObjectId(req.user._id)" is needed here:
+    // req.user._id, even though it LOOKS like a MongoDB ObjectId, is
+    // technically a STRING once it comes through req.user (Express
+    // doesn't preserve the ObjectId type across the request). Normal
+    // Mongoose methods like findById() automatically convert a string
+    // into an ObjectId behind the scenes for you - but the aggregation
+    // pipeline does NOT do this automatic conversion. Inside $match,
+    // MongoDB compares raw BSON types directly - a string "64f1a2b3..."
+    // is NOT equal to an actual ObjectId("64f1a2b3...") as far as the
+    // database engine is concerned, even though they look identical to
+    // us. Without this manual conversion, $match would silently match
+    // ZERO documents, since the types wouldn't line up - no error, just
+    // an empty result, which is a notoriously hard bug to spot.
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(req.user._id),
+      },
+    },
+
+    // STAGE 2: $lookup - this is MongoDB's version of a SQL JOIN.
+    // It looks into the "videos" collection, and for every ObjectId
+    // found in THIS document's "watchHistory" array (localField),
+    // it finds videos where video._id (foreignField) matches, and
+    // attaches the full matched video documents as a new array field
+    // called "watchHistory" (as) - overwriting the array of plain
+    // ObjectIds with the array of actual full video documents.
+    {
+      $lookup: {
+        from: "videos", // the actual MongoDB collection name (lowercase, pluralized automatically by Mongoose from the "Video" model)
+        localField: "watchHistory", // field on the CURRENT (User) document
+        foreignField: "_id", // field on the collection being joined (Video)
+        as: "watchHistory", // name of the new field holding the joined results
+
+        // A "pipeline" INSIDE a $lookup lets us run ADDITIONAL
+        // aggregation stages on the matched videos BEFORE they get
+        // attached back to the user document - this is what makes
+        // the join "nested". Here, we use it to also resolve each
+        // video's own "owner" field (which is itself just an
+        // ObjectId pointing to a User) into actual owner data.
+        pipeline: [
+          {
+            // NESTED $lookup #2: same JOIN concept as above, but now
+            // running on each individual VIDEO document (not the
+            // original User) - joining the video's "owner" ObjectId
+            // against the "users" collection to get the uploader's info.
+            $lookup: {
+              from: "users",
+              localField: "owner", // field on the Video document
+              foreignField: "_id", // field on the User being joined
+              as: "owner",
+
+              // Nested pipeline AGAIN, this time to control which
+              // fields of the owner we actually want. Without this,
+              // $lookup would attach the ENTIRE owner user document,
+              // including password hash and refreshToken - a real
+              // security leak. $project here whitelists ONLY the
+              // three fields the frontend actually needs to display.
+              pipeline: [
+                {
+                  $project: {
+                    fullname: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            // WHY $addFields + $first is needed here:
+            // $lookup ALWAYS returns an array, even when there's only
+            // ONE matching document (a video has exactly one owner,
+            // never multiple). So after the $lookup above, "owner"
+            // would look like: owner: [{ fullname: "...", ... }] -
+            // an array containing a single object, which is awkward
+            // for the frontend to work with (video.owner[0].fullname
+            // instead of just video.owner.fullname).
+            //
+            // $first: "$owner" takes the first (and only) element out
+            // of that array, converting owner from an array of one
+            // object into just the object itself. The "$" prefix on
+            // "$owner" means "read the value of the owner field on
+            // THIS document" (aggregation syntax for field references).
+            $addFields: {
+              owner: {
+                $first: "$owner",
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      "Watch history fetched successfully",
+      user[0]?.watchHistory // remember: aggregate() returns an array
+    )
+  );
+});
+
 export {
   registerUser,
   loginUser,
@@ -617,4 +736,5 @@ export {
   updateCoverImage,
   editAccountDetails,
   getUserChannelProfile,
+  getWatchHistory,
 };
