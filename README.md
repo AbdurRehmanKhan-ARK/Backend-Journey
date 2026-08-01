@@ -1,188 +1,156 @@
 <div align="center">
-  
+
 <img src="./Backend-Journey/assets/backend-logo.svg" width="220" alt="Backend Journey logo"/>
-  
+
 ![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=500&size=18&duration=3500&pause=1500&color=68D391&center=true&vCenter=true&width=650&lines=Backend+Journey;Learning+by+building.;Node.js+%7C+Express+%7C+MongoDB+%7C+REST+APIs;One+concept.+One+file.+Every+day.)
 
 </div>
 
 ## About
 
-This repository documents a structured, concept-by-concept approach to learning JavaScript backend development from the ground up. Each topic from the **Chai aur Code** series is practiced in its own dedicated file - no combined scripts, no skipped concepts.
+This repository is my hands-on Backend Journey. It brings together notes, roadmap files, mini-practice projects, and larger backend applications as I learn Node.js, Express, MongoDB, authentication, and API development step by step.
 
-Alongside the notes, this repo now also holds the **actual Backend + Frontend fullstack project** (`Chai-Backend/Backend` and `Chai-Backend/Frontend`) built while following the deployment and fullstack modules - not just theory, but a real Express + Vite app wired together and deployed.
+The goal is simple: learn by building. Every concept is practiced in a real project instead of being left as theory alone.
 
-> The goal is not just to watch and move on. Every session produces a committed file or a working piece of code. The commit history is the learning log. <br/>
-> ⚠️ **Note:** The `Structure`, `Topics Roadmap`, and `Mega Project` sections below are living/WIP - they'll keep changing as the playlist progresses and new folders/files get added. Treat them as a snapshot, not a fixed blueprint.
 ---
 
-## Structure 🔄 *(subject to change)*
+## What this repository contains
 
-```
+- Learning notes and structured topics in the Roadmap section
+- Full-stack practice in the Chai-Backend project
+- A more complete backend project in Mega-Project
+- API testing resources and collections in the postman folder
+- Personal notes and learning artifacts in Playlist-Notes and Playlist-Tracking
+
+---
+
+## Repository structure
+
+```text
 Backend-Journey/
-│
-├── 📁 .obsidian/                          # Obsidian vault config (notes are viewed/edited here)
-│
-├── 📁 Chai-Backend/
-│   │
-│   ├── 📁 Backend/                        # actual Express server
-│   │   ├── package.json
-│   │   ├── package-lock.json
-│   │   └── server.js
-│   │
-│   ├── 📁 Frontend/                       # actual Vite + React client
-│   │   ├── dist/                          # production build output
-│   │   ├── public/
-│   │   ├── src/
-│   │   ├── .gitignore
-│   │   ├── eslint.config.js
-│   │   ├── index.html
-│   │   ├── package.json
-│   │   ├── package-lock.json
-│   │   ├── vite.config.js
-│   │   └── README.md
-│   │
-│   ├── 📁 Playlist-Notes/                 # video-by-video concept notes + code
-│   │   ├── 📁 03_Data-Modelling-Mongoose/
-│   │   │   ├── Models/
-│   │   │   │   ├── e-commerce/
-│   │   │   │   ├── hospital-management/
-│   │   │   │   └── todos/
-│   │   │   └── 03_Data-Modelling-Mongoose.md
-│   │   ├── 01_Backend_to_Production.md
-│   │   └── 02_Full-Stack-Deployment-Practice.md
-│   │
-│   └── 📁 Playlist-Tracking/              # live mini-project built while following along
-│       ├── node_modules/
-│       └── .env
-├── 📁 Mega-Project/                       # youtube-style backend - full project (Hitesh sir's chai-backend series)
-│   ├── package.json
-│   └── README.md                         
-|  
-├── 📁 Roadmap/
-│    ├── 00-START-HERE.md                # quick start guide - where to begin
-│    ├── Overview.md                     # complete course outline
-│    ├── 1-Introduction.md               # what is backend, client-server, HTTP basics
-│    ├── 2-Foundation.md                 # Node.js, npm, package.json, modules
-│    ├── 3-ExpressJS.md                  # Express setup, routing, middleware
-│    ├── 4-Databases.md                  # MongoDB, PostgreSQL, when to use what
-│    ├── 5-ORM-ODM.md                    # Mongoose, Sequelize, schema, models
-│    ├── 6-API-Development.md            # REST APIs, CRUD, auth, JWT
-│    ├── 7-Deployment.md                 # production, environment, hosting
-│    ├── Behind-The-Scenes.md            # how this repo/roadmap itself was structured
-│    │
-│    ├── 📁 Projects/
-│    │   ├── Project-Ideas.md            # project list with difficulty levels
-│    │   └── Project-Setup-Template.md   # boilerplate setup for every project
-│    │
-│    └── 📁 Resources/
-│         ├── Commands-Cheatsheet.md      # quick reference - npm, git, node commands
-│         ├── Links-and-Documentation.md  # official docs, useful references
-│         └── Useful-Libraries.md         # curated npm packages worth knowing
-│
-├── 📄 .gitignore
-├── 📄 LICENSE
-└── 📄 README.md
+├── Backend-Journey/
+│   └── assets/
+├── Chai-Backend/
+│   ├── Backend/
+│   ├── Frontend/
+│   ├── Playlist-Notes/
+│   └── Playlist-Tracking/
+├── Mega-Project/
+├── Roadmap/
+├── postman/
+├── .obsidian/
+├── README.md
+└── LICENSE
 ```
 
 ---
 
-## Topics Roadmap 🔄 *(subject to change)*
+## Current focus areas
 
-| File | Module | Status |
-|------|--------|--------|
-| `1-Introduction.md` | **Introduction** - what is backend · client-server · HTTP · request-response cycle | ✅ Complete |
-| `2-Foundation.md` | **Foundation** - Node.js · npm · package.json · CommonJS modules · file system | ✅ Complete |
-| `3-ExpressJS.md` | **Express.js** - server setup · routing · middleware · error handling · MVC | ✅ Complete |
-| `4-Databases.md` | **Databases** - MongoDB · PostgreSQL · SQL vs NoSQL · when to use what | ✅ Complete |
-| `5-ORM-ODM.md` | **ORM/ODM** - Mongoose · Sequelize · schemas · models · CRUD | ✅ Complete |
-| `6-API-Development.md` | **API Development** - REST principles · CRUD APIs · JWT auth · Postman testing | ✅ Complete |
-| `7-Deployment.md` | **Deployment** - environment variables · production setup · hosting | ✅ Complete |
-| `Behind-The-Scenes.md` | **Behind The Scenes** - how the roadmap/repo itself is organized and why | ✅ Complete |
-
-> 🔄 Currently tracking: `Playlist-Notes/` - video-by-video notes (Mongoose data modelling in progress: todos, e-commerce, hospital-management)
-> 🏗️ Currently building: `Chai-Backend/Backend` + `Chai-Backend/Frontend` - a real fullstack app tying the concepts together
-> 🎯 Goal: Production-ready REST APIs - design · build · secure · deploy
+- Node.js and Express fundamentals
+- REST APIs and CRUD operations
+- Middleware, routing, and error handling
+- MongoDB and Mongoose models
+- Authentication and JWT-based flows
+- File upload and deployment basics
+- Connecting frontend and backend in real projects
 
 ---
 
-## 🎬 Mega Project 🔄 *(subject to change)*
+## Projects in this repo
 
-Following [`hiteshchoudhary/chai-backend`](https://github.com/hiteshchoudhary/chai-backend) - a complete, production-shaped backend for a YouTube-style video hosting platform.
+### Chai-Backend
 
-**Core features:** login/signup · JWT access + refresh tokens · bcrypt password hashing · video upload · like/dislike · comment/reply · subscribe/unsubscribe
+This folder contains a practical full-stack learning app with:
 
-This is where every earlier module - Express routing, Mongoose modelling, auth, deployment - comes together into one real app, not isolated exercises.
+- a backend built with Express
+- a frontend built with Vite and React
+- simple API integration between the two layers
 
-📐 [ER Diagram](https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj)
+It is meant to connect the concepts from the learning roadmap to a working app.
 
-> Tracked under `Mega-Project/` at repo root, alongside `Chai-Backend/`.
+### Mega-Project
 
-## How to Run
+This is a more complete backend-focused project inspired by a YouTube-style video hosting platform. It includes features such as:
 
-**Requirements:** Node.js v18+
+- user signup and login
+- password hashing with bcrypt
+- JWT-based authentication
+- MongoDB models and database interaction
+- file upload support and related middleware
+
+---
+
+## How to run
+
+Requirements: Node.js 18+
+
+### Chai-Backend backend
 
 ```bash
-# Clone the repo
-git clone https://github.com/AbdurRehmanKhan-ARK/Backend-Journey.git
-cd Backend-Journey/Chai-Backend
-
-# Backend
-cd Backend
+cd Chai-Backend/Backend
 npm install
-node server.js
-# or with nodemon
-npx nodemon server.js
+npm start
+```
 
-# Frontend (separate terminal)
-cd ../Frontend
+### Chai-Backend frontend
+
+```bash
+cd Chai-Backend/Frontend
+npm install
+npm run dev
+```
+
+### Mega-Project
+
+```bash
+cd Mega-Project
 npm install
 npm run dev
 ```
 
 ---
 
-## Series Reference
+## Learning roadmap
 
-This repository follows the **JavaScript Backend series by [Chai aur Code](https://www.youtube.com/@chaiaurcode)** on YouTube.
-Each file corresponds to a video or concept from the series that is well explained and easy to understand.
+The Roadmap section contains the main study path for this journey:
+
+- [Roadmap/00-START-HERE.md](Roadmap/00-START-HERE.md)
+- [Roadmap/Overview.md](Roadmap/Overview.md)
+- [Roadmap/1-Introduction.md](Roadmap/1-Introduction.md)
+- [Roadmap/2-Foundation.md](Roadmap/2-Foundation.md)
+- [Roadmap/3-ExpressJS.md](Roadmap/3-ExpressJS.md)
+- [Roadmap/4-Databases.md](Roadmap/4-Databases.md)
+- [Roadmap/5-ORM-ODM.md](Roadmap/5-ORM-ODM.md)
+- [Roadmap/6-API-Development.md](Roadmap/6-API-Development.md)
+- [Roadmap/7-Deployment.md](Roadmap/7-Deployment.md)
 
 ---
 
-## Related Repositories
+## Series reference
 
-- [JavaScript-Tutorials](https://github.com/AbdurRehmanKhan-ARK/JavaScript-Tutorials) - JS fundamentals to V8 internals · 20 modules · 74 files · 2 weeks
-- [Learning-DevOps](https://github.com/AbdurRehmanKhan-ARK/Learning-DevOps) - Docker · Linux · Kubernetes · CI/CD
+This repository follows the JavaScript backend learning path inspired by Chai aur Code and the broader backend development journey from fundamentals to real-world application.
 
 ---
 
-## Feedback & Contributions 🙌
+## Feedback and contributions
 
-Found a bug in one of the projects? Have a cleaner implementation in mind?
-All feedback, corrections, and suggestions are genuinely welcome.
-
-- 🐛 **Bug or mistake** - open an issue
-- 💡 **Better approach** - start a discussion
-- 🤝 **Want to collaborate** - reach out via email
-
-This is a learning repo, not a perfect one. Every correction makes it better.
+If you spot a mistake, have a better approach, or want to suggest improvements, feel free to contribute. This repo is meant to grow as I learn.
 
 ---
 
 ## Author
 
-**Abdur Rehman Khan** <br>
-BS Computer Science · FAST-NUCES Karachi <br>
-abdurrehmankhan0909@gmail.com · [GitHub](https://github.com/AbdurRehmanKhan-ARK)
+Abdur Rehman Khan
+BS Computer Science · FAST-NUCES Karachi
+abdurrehmankhan0909@gmail.com
 
 ---
 
 <div align="center">
 
-**If this repository helped you understand a concept or saved you time, consider leaving a ⭐ - it genuinely means a lot.**
+If this repository helped you understand a concept or saved you time, consider leaving a star.
 
-<br/>
-
-_Built in public. Imperfect by design. Improving every commit._
+Built in public. Improving one step at a time.
 
 </div>
