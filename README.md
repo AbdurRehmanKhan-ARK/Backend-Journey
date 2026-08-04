@@ -30,8 +30,7 @@ The philosophy is simple: **learn by building.** Every concept here is practiced
 - 🍵 Full-stack practice in the **Chai-Backend** project
 - 🎬 A more complete backend project in **Mega-Project**
 - 🧪 API testing resources and collections in the **postman** folder
-- 📝 Personal notes and learning artifacts in **Playlist-Notes** and **Playlist-Tracking**
-
+- 📝 Personal notes and learning artifacts in **Mega-Project/docs** and **Playlist-Tracking**
 ---
 
 ## 🗂️ Repository Structure
